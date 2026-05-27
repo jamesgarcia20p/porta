@@ -17,6 +17,7 @@ document.querySelectorAll('.nav-links a').forEach((link) => {
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 let balls = [];
+let snowflakes = [];
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -34,6 +35,25 @@ function createBalls(count = 20) {
     spinSpeed: (Math.random() - 0.5) * 0.12,
     color: Math.random() > 0.5 ? 'rgba(255,102,0,0.28)' : 'rgba(255,183,3,0.24)',
   }));
+}
+
+
+function createSnowflakes(count = 90) {
+  snowflakes = Array.from({ length: count }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 2.6 + 0.8,
+    vy: Math.random() * 1.2 + 0.3,
+    vx: (Math.random() - 0.5) * 0.35,
+    drift: Math.random() * Math.PI * 2,
+  }));
+}
+
+function drawSnowflake(flake) {
+  ctx.beginPath();
+  ctx.arc(flake.x, flake.y, flake.r, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  ctx.fill();
 }
 
 function drawBall(ball) {
@@ -59,6 +79,21 @@ function drawBall(ball) {
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  snowflakes.forEach((flake) => {
+    flake.y += flake.vy;
+    flake.x += Math.sin(flake.drift) * 0.25 + flake.vx;
+    flake.drift += 0.02;
+
+    if (flake.y > canvas.height + flake.r) {
+      flake.y = -flake.r;
+      flake.x = Math.random() * canvas.width;
+    }
+    if (flake.x < -flake.r) flake.x = canvas.width + flake.r;
+    if (flake.x > canvas.width + flake.r) flake.x = -flake.r;
+
+    drawSnowflake(flake);
+  });
+
   balls.forEach((ball) => {
     ball.x += ball.vx;
     ball.y += ball.vy;
@@ -75,8 +110,10 @@ function animate() {
 
 resizeCanvas();
 createBalls();
+createSnowflakes();
 animate();
 window.addEventListener('resize', () => {
   resizeCanvas();
   createBalls();
+  createSnowflakes();
 });
